@@ -157,22 +157,14 @@
         const calendar = document.getElementById("calendar");
         const monthYearDisplay = document.getElementById("month-year");
         const summaryDisplay = document.getElementById("summary");
-        const notesContainer = document.getElementById("notes-container");
-        const notesTitle = document.getElementById("notes-title");
-        const workoutNotes = document.getElementById("workout-notes");
 
         let currentMonth = new Date().getMonth();
         let currentYear = 2025;
-        let selectedDateKey = null;
-
-        const storedData = JSON.parse(localStorage.getItem("workoutRestTracker2025")) || {};
-        const notesData = JSON.parse(localStorage.getItem("workoutNotes2025")) || {};
+        let storedData = JSON.parse(localStorage.getItem("workoutRestTracker2025")) || {};
 
         function createCalendar() {
             calendar.innerHTML = "";
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            const today = new Date();
-            const isCurrentMonth = (currentYear === today.getFullYear() && currentMonth === today.getMonth());
 
             monthYearDisplay.innerText = `${new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long' })} ${currentYear}`;
 
@@ -194,10 +186,15 @@
                 dayElement.appendChild(emoji);
 
                 dayElement.addEventListener("click", () => {
-                    selectedDateKey = dateKey;
-                    notesContainer.style.display = "block";
-                    notesTitle.innerText = `Notes for ${day} ${new Date(currentYear, currentMonth).toLocaleString('default', { month: 'long' })}`;
-                    workoutNotes.value = notesData[dateKey] || "";
+                    let states = ["⬜️", "🏋️‍♀️", "🧘‍♀️", "💀"];
+                    let currentIndex = states.indexOf(emoji.innerText);
+                    let nextIndex = (currentIndex + 1) % states.length;
+                    emoji.innerText = states[nextIndex];
+
+                    storedData[dateKey] = emoji.innerText;
+                    localStorage.setItem("workoutRestTracker2025", JSON.stringify(storedData));
+                    updateDayStyle(dayElement, emoji.innerText);
+                    updateSummary();
                 });
 
                 calendar.appendChild(dayElement);
@@ -207,21 +204,9 @@
 
         function updateDayStyle(dayElement, emoji) {
             dayElement.classList.remove("workout", "rest", "no-excuse");
-            if (emoji === "🏋️‍♀️") {
-                dayElement.classList.add("workout");
-            } else if (emoji === "🧘‍♀️") {
-                dayElement.classList.add("rest");
-            } else if (emoji === "💀") {
-                dayElement.classList.add("no-excuse");
-            }
-        }
-
-        function saveNote() {
-            if (selectedDateKey) {
-                notesData[selectedDateKey] = workoutNotes.value;
-                localStorage.setItem("workoutNotes2025", JSON.stringify(notesData));
-                alert("Workout note saved!");
-            }
+            if (emoji === "🏋️‍♀️") dayElement.classList.add("workout");
+            else if (emoji === "🧘‍♀️") dayElement.classList.add("rest");
+            else if (emoji === "💀") dayElement.classList.add("no-excuse");
         }
 
         function updateSummary() {
